@@ -7,6 +7,26 @@ context - same data to be accessible by all resolvers
 info - contain extra information about an operation's current state
 */
 
+/*QUERY EXAMPLE WITH PARAMETER FROM FRONT END
+
+query getSingleUser($username: String!) {
+  user(username: $username) {
+    username
+    friendCount
+    thoughts {
+      thoughtText
+      createdAt
+    }
+    friends {
+      username
+    }
+  }
+}
+
+{
+  "username": "Deborah61"
+}
+*/
 
 const resolvers = {
     Query: {
