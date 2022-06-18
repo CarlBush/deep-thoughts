@@ -1,8 +1,18 @@
 const { gql } = require("apollo-server-express");
 
 //As a reminder, "reactions" are simply replies to or comments about a single thought.
+//exclamation "!" (String!) in the query parameters is that the data MUST exist
 
 const typeDefs = gql`
+
+type User {
+    _id: ID
+    username: String
+    email: String
+    friendCount: Int
+    thoughts: [Thought]
+    friends: [User]
+}
 
 type Thought {
     _id: ID
@@ -21,7 +31,10 @@ type Reaction {
 }
 
 type Query {
+    users: [User]
+    user(username: String!) : User
     thoughts(username: String): [Thought]
+    thought(_id: ID!): Thought
     }
 `;
 
