@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
+import { useMutation } from "@apollo/client";
+import { ADD_USER } from '../utils/mutation';
 
 const Signup = () => {
+
+  //useMutation() Hook creates and prepares a JavaScript function that wraps around our mutation code and returns it to us
+  //returns in the form of the addUser function that's returned
+  const [addUser, { error }] = useMutation(ADD_USER);
+
   const [formState, setFormState] = useState({ username: '', email: '', password: '' });
 
   // update state based on form input changes
@@ -16,6 +23,16 @@ const Signup = () => {
   // submit form
   const handleFormSubmit = async (event) => {
     event.preventDefault();
+    //use try/catch instead of promises to handle errors
+    try {
+      // execute addUser mutation and pass in variable data from form
+      const { data } = await addUser({
+        variables: { ...formState }
+      });
+      console.log(data)
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
@@ -56,6 +73,7 @@ const Signup = () => {
                 Submit
               </button>
             </form>
+            {error && <div>Sign up Failed</div>}
           </div>
         </div>
       </div>
