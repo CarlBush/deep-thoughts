@@ -17,7 +17,8 @@ import NoMatch from './pages/NoMatch';
 import SingleThought from './pages/SingleThought';
 import Profile from './pages/Profile';
 import Signup from './pages/Signup';
-
+import { setContext } from '@apollo/client/link/context';
+//setContext middleware function that will retrieve the token for us and combine it with the existing httpLink
 
 // establish the connection to the back-end server's /graphql endpoint.
 const httpLink = createHttpLink({
@@ -25,8 +26,21 @@ const httpLink = createHttpLink({
   uri: "/graphql"
 });
 
+//setContext
+//_ in the setContext is ingnoring the first parameter
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('id_token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+
 const client = new ApolloClient({
-  link: httpLink,
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 
