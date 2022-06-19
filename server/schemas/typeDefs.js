@@ -35,7 +35,13 @@ type Query {
     user(username: String!) : User
     thoughts(username: String): [Thought]
     thought(_id: ID!): Thought
-    }
+}
+
+type Mutation {
+    login(email: String!, password: String!): User
+    addUser(username: String!, email: String!, password: String!): User
+}
+
 `;
 
 

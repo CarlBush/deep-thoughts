@@ -1,4 +1,5 @@
 const { User, Thought } = require("../models");
+const { AuthenticationError } = require("apollo-server-express");
 
 /*resolver options in the following order
 parent - nested resolvers to handle more complicated actions, as it would hold the reference to the resolver that executed the nested resolver function.
@@ -51,9 +52,32 @@ const resolvers = {
         //QUERY user(username: String!) : User | GET SINGLE USER
         user: async (parent, { username }) => {
             return User.findOne({ username })
-            .select("-__V -password")
-            .populate("friends")
-            .populate("thoughts");
+                .select("-__V -password")
+                .populate("friends")
+                .populate("thoughts");
+        }
+    },
+    Mutation: {
+        //EX: addUser(username:"tester", password:"test12345", email:"test@test.com") = args
+        addUser: async (parent, args) => {
+            const user = await User.create(args);
+            return user;
+
+        },
+        login: async (parent, { email, password }) => {
+            const user = await User.findOne({ email });
+
+            if (!user) {
+                throw new AuthenticationError("Incorrect credentials");
+            }
+
+            const correctPw = await user.isCorrectPassword(password);
+
+            if (!correctPw) {
+                throw new AuthenticationError("Incorrect credentials");
+            }
+
+            return user;
         }
     }
 };
