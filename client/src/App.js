@@ -15,7 +15,8 @@ import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from "@ap
 
 // establish the connection to the back-end server's /graphql endpoint.
 const httpLink = createHttpLink({
-  uri: "http://localhost:3001/graphql"
+  //uri: "http://localhost:3001/graphql"
+  uri: "/graphql"
 });
 
 const client = new ApolloClient({

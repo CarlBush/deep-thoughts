@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('./config/connection');
+const path = require("path");
 
 //APOLLO & GraphQL
 const { ApolloServer } = require("apollo-server-express");
@@ -33,6 +34,19 @@ const startApolloServer = async (typeDefs, resolvers) => {
   //APOLLO & GraphQL
   // integrate our Apollo server with the Express application as middleware
   server.applyMiddleware({ app });
+
+  // Serve up static assets
+  //check to see if the Node environment is in production. 
+  //If it is, we instruct the Express.js server to serve any files in the React application's build directory in the client folder.
+  if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/build')));
+  }
+
+  //wildcard GET route for the server
+  //f we make a GET request to any location on the server that doesn't have an explicit route defined, respond with the production-ready React front-end code.
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
 
   db.once('open', () => {
     app.listen(PORT, () => {
