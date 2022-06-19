@@ -5,7 +5,7 @@ const db = require('./config/connection');
 const { ApolloServer } = require("apollo-server-express");
 //APOLLO & GraphQL
 const { typeDefs, resolvers } = require("./schemas");
-
+const { authMiddleware } = require("./utils/auth");
 
 const PORT = process.env.PORT || 3001;
 
@@ -14,7 +14,9 @@ const PORT = process.env.PORT || 3001;
 //provide the type definitions and resolvers so they know what our API looks like and how it resolves requests.
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  //used for token
+  context: authMiddleware
 });
 
 const app = express();

@@ -56,6 +56,19 @@ const resolvers = {
                 .select("-__V -password")
                 .populate("friends")
                 .populate("thoughts");
+        },
+        //QUERY me: User | Used for Token
+        //context located in server.js and auth.js to work
+        me: async (parent, args, context) => {
+            if (context.user) {
+                const userData = await User.findOne({ _id: context.user_id })
+                    .select("-__V -password")
+                    .populate("friends")
+                    .populate("thoughts");
+
+                return userData;
+            }
+            throw new AuthenticationError("Not Logged In");
         }
     },
     Mutation: {
@@ -82,6 +95,51 @@ const resolvers = {
 
             const token = signToken(user);
             return { token, user };
+        },
+        //ONLY LOGGED IN USERS CAN USE THIS MUTATION
+        //QUERY addThought(thoughtText: String!): Thought
+        addThought: async (parent, args, context) => {
+            if (context.user) {
+                const thought = await Thought.create({ ...args, username: context.user.username });
+
+                await User.findByIdAndUpdate(
+                    { _id: context.user._id },
+                    { $push: { thoughts: thought.__id } },
+                    { new: true }
+                );
+                return thought;
+            }
+            throw new AuthenticationError("You need to be logged in!");
+        },
+        //Reactions are stored as arrays on the Thought model
+        //QUERY addReaction(thoughtId: ID!, reactionBody: String!): Thought
+        addReaction: async (parent, { thoughtId, reactionBody }, context) => {
+            if (context.user) {
+                const updatedThought = await Thought.findOneAndUpdate(
+                    { _id: thoughtId },
+                    { $push: { reactions: { reactionBody, username: context.user.username } } },
+                    { new: true, runValidators: true }
+                );
+
+                return updatedThought;
+            }
+
+            throw new AuthenticationError('You need to be logged in!');
+        },
+        //look for an incoming friendId and add that to the current user's friends array
+        //QUERY addFriend(friendId: ID!): User
+        addFriend: async (parent, { friendId }, context) => {
+            if (context.user) {
+                const updatedUser = await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $addToSet: { friends: friendId } },
+                    { new: true }
+                ).populate('friends');
+
+                return updatedUser;
+            }
+
+            throw new AuthenticationError('You need to be logged in!');
         }
     }
 };
