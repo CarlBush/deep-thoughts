@@ -61,14 +61,15 @@ const resolvers = {
         //context located in server.js and auth.js to work
         me: async (parent, args, context) => {
             if (context.user) {
-                const userData = await User.findOne({ _id: context.user_id })
-                    .select("-__V -password")
-                    .populate("friends")
-                    .populate("thoughts");
+                const userData = await User.findOne({ _id: context.user._id })
+                    .select('-__v -password')
+                    .populate('thoughts')
+                    .populate('friends');
 
                 return userData;
             }
-            throw new AuthenticationError("Not Logged In");
+
+            throw new AuthenticationError('Not logged in');
         }
     },
     Mutation: {
