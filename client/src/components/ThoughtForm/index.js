@@ -1,23 +1,48 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { ADD_THOUGHT } from "../../utils/mutations";
-import { QUERY_THOUGHTS } from '../../utils/queries';
+import { QUERY_THOUGHTS, QUERY_ME } from '../../utils/queries';
 
 const ThoughtForm = () => {
     const [thoughtText, setText] = useState('');
     const [characterCount, setCharacterCount] = useState(0);
 
+    //RENDER FOR JUST HOMEPAGE
+    // const [addThought, { error }] = useMutation(ADD_THOUGHT, {
+    //     //RENDER THOUGHTS AFTER SUBMITTING
+    //     // read what's currently in the cache
+    //     update(cache, { data: { addThought } }) {
+
+    //         const { thoughts } = cache.readQuery({ query: QUERY_THOUGHTS });
+
+    //         // prepend the newest thought to the front of the array
+    //         cache.writeQuery({
+    //             query: QUERY_THOUGHTS,
+    //             data: { thoughts: [addThought, ...thoughts] }
+    //         });
+    //     }
+    // });
+
     const [addThought, { error }] = useMutation(ADD_THOUGHT, {
-        //RENDER THOUGHTS AFTER SUBMITTING
-        // read what's currently in the cache
         update(cache, { data: { addThought } }) {
 
-            const { thoughts } = cache.readQuery({ query: QUERY_THOUGHTS });
+            // could potentially not exist yet, so wrap in a try/catch
+            try {
+                // update me array's cache
+                const { me } = cache.readQuery({ query: QUERY_ME });
+                cache.writeQuery({
+                    query: QUERY_ME,
+                    data: { me: { ...me, thoughts: [...me.thoughts, addThought] } },
+                });
+            } catch (e) {
+                console.warn("First thought insertion by user!")
+            }
 
-            // prepend the newest thought to the front of the array
+            // update thought array's cache
+            const { thoughts } = cache.readQuery({ query: QUERY_THOUGHTS });
             cache.writeQuery({
                 query: QUERY_THOUGHTS,
-                data: { thoughts: [addThought, ...thoughts] }
+                data: { thoughts: [addThought, ...thoughts] },
             });
         }
     });
